@@ -3,16 +3,19 @@ module Interpreter (run) where
 
 import Tape (Tape, initialTape, moveRight, moveLeft, inc, dec, printCell, showTape, getCellValue)
 
--- this code is trash
+-- Corrected extractLoopBody function
 extractLoopBody :: String -> (String, String)
-extractLoopBody = go 0 ""
+extractLoopBody s = go 1 "" s
   where
-    go _ acc [] = (acc, [])
-    go 0 acc (']' : rest) = (acc, rest)
-    go n acc ('[' : rest) =
-      let (inner, after) = go (n + 1) "" rest
-       in go (n - 1) (acc ++ "[" ++ inner ++ "]") after
-    go n acc (x : xs) = go n (acc ++ [x]) xs
+    -- level: current nesting level. Starts at 1 because we are already inside one '['.
+    -- current_loop_body: accumulator for the body of the current loop.
+    -- remaining_code: the rest of the string to process.
+    go :: Int -> String -> String -> (String, String)
+    go _ current_loop_body [] = (current_loop_body, []) -- Unbalanced bracket, loop body is till end of string
+    go 1 current_loop_body (']':rs) = (current_loop_body, rs) -- Found matching ']' for the initial loop
+    go level current_loop_body (']':rs) = go (level - 1) (current_loop_body ++ [']']) rs -- Closing a nested ']'
+    go level current_loop_body ('[':rs) = go (level + 1) (current_loop_body ++ ['[']) rs -- Opening a nested '['
+    go level current_loop_body (c_char:rs)   = go level (current_loop_body ++ [c_char]) rs -- Other char
 
 run :: String -> Tape -> IO ()
 run [] _ = return ()
