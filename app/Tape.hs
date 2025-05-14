@@ -7,6 +7,7 @@ module Tape
     dec,
     printCell,
     showTape,
+    getCellValue
   )
 where
 
@@ -29,6 +30,9 @@ dec (ls, x, rs) = (ls, x - 1, rs)
 
 printCell :: Tape -> IO ()
 printCell (_, x, _) = putChar (toEnum x)
+
+getCellValue :: Tape -> Int
+getCellValue (_, val, _) = val
 
 showTape :: Tape -> String
 showTape (ls, x, rs) =
