@@ -23,10 +23,10 @@ moveLeft :: Tape -> Tape
 moveLeft (l : ls, x, rs) = (ls, l, x : rs)
 
 inc :: Tape -> Tape
-inc (ls, x, rs) = (ls, x + 1, rs)
+inc (ls, x, rs) = (ls, (x + 1) `mod` 256, rs)
 
 dec :: Tape -> Tape
-dec (ls, x, rs) = (ls, x - 1, rs)
+dec (ls, x, rs) = (ls, (x - 1 + 256) `mod` 256, rs)
 
 printCell :: Tape -> IO ()
 printCell (_, x, _) = putChar (toEnum x)
