@@ -1,7 +1,7 @@
 -- src/Interpreter.hs
 module Interpreter (run) where
 
-import Tape (Tape, initialTape, moveRight, moveLeft, inc, dec, printCell, showTape, getCellValue) -- printCell will no longer be used directly here for output
+import Tape (Tape, initialTape, moveRight, moveLeft, inc, dec, printCell, showTape, getCellValue, readChar) -- printCell will no longer be used directly here for output
 
 -- Corrected extractLoopBody function
 extractLoopBody :: String -> (String, String)
@@ -32,6 +32,9 @@ run (c : cs) tape = do
       let char_to_print = toEnum (getCellValue tape) :: Char
       (recursive_output, _) <- run cs tape -- We don't need recursive_did_print directly, this path itself is a print
       return (char_to_print : recursive_output, True) -- Prepend current char, mark True as this path printed
+    ',' -> do -- Handle the input command
+      newTape <- readChar tape -- Read a char and update the tape
+      run cs newTape -- Continue execution with the updated tape
     '[' -> do
       let (loop_body, after_loop) = extractLoopBody cs
       if getCellValue tape == 0
