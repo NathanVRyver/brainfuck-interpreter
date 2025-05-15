@@ -78,3 +78,32 @@ executable horsing-around
 
     -- Base language which the package is written in.
     default-language: Haskell2010
+
+-- Add a test suite
+test-suite horsing-around-test
+    -- Import common warning flags.
+    import:           warnings
+
+    -- Specify the test suite type
+    type:             exitcode-stdio-1.0
+
+    -- .hs or .lhs file containing the Main module for the test suite.
+    main-is:          InterpreterTest.hs
+
+    -- Modules included in this test suite, other than Main.
+    other-modules:    Tape, Interpreter
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+
+    -- Other library packages from which modules are imported.
+    -- Add HUnit dependency
+    build-depends:    base ^>=4.18.3.0,
+                      HUnit ^>=1.6.2.0 
+
+    -- Include both app and test directories
+    -- Directories containing source files.
+    hs-source-dirs:   app, test
+
+    -- Base language which the package is written in.
+    default-language: Haskell2010
