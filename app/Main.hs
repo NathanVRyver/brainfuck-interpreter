@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 import Interpreter
 import System.Environment (getArgs)
 import System.IO (hFlush, stdout, stderr, hPutStrLn)
