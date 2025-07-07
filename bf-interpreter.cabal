@@ -71,7 +71,7 @@ executable bf-interpreter
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.18.3.0
+    build-depends:    base ^>=4.17.0.0
 
     -- Directories containing source files.
     hs-source-dirs:   app
@@ -98,7 +98,7 @@ test-suite bf-interpreter-test
 
     -- Other library packages from which modules are imported.
     -- Add HUnit dependency
-    build-depends:    base ^>=4.18.3.0,
+    build-depends:    base ^>=4.17.0.0,
                       HUnit ^>=1.6.2.0 
 
     -- Include both app and test directories
