@@ -1,7 +1,8 @@
--- src/Interpreter.hs
-module Interpreter (run) where
+{-# LANGUAGE ScopedTypeVariables #-}
+module Interpreter (run, runSilent) where
 
-import Tape (Tape, initialTape, moveRight, moveLeft, inc, dec, printCell, showTape, getCellValue, readChar) -- printCell will no longer be used directly here for output
+import Tape (Tape, moveRight, moveLeft, inc, dec, showTape, getCellValue, readChar)
+import Control.Exception (catch, SomeException)
 
 -- Corrected extractLoopBody function
 extractLoopBody :: String -> (String, String)
@@ -19,26 +20,44 @@ extractLoopBody s = go 1 "" s
 
 -- run now returns (accumulatedOutputString, wasAnythingPrintedByDot)
 run :: String -> Tape -> IO (String, Bool)
-run [] _ = return ("", False) -- Base case: no input string, so no output, nothing printed
-run (c : cs) tape = do
-  -- Diagnostic log remains
-  putStrLn $ "[instr: " ++ [c] ++ "] (src: " ++ take 30 (c:cs) ++ ") " ++ showTape tape
+run = runWithLogging True
+
+-- runSilent executes without diagnostic logging
+runSilent :: String -> Tape -> IO (String, Bool)
+runSilent = runWithLogging False
+
+-- Internal function that handles both verbose and silent execution
+runWithLogging :: Bool -> String -> Tape -> IO (String, Bool)
+runWithLogging _ [] _ = return ("", False)
+runWithLogging verbose (c : cs) tape = do
+  -- Diagnostic log only if verbose mode is enabled
+  when verbose $
+    putStrLn $ "[instr: " ++ [c] ++ "] (src: " ++ take 30 (c:cs) ++ ") " ++ showTape tape
+  
   case c of
-    '>' -> run cs (moveRight tape)
-    '<' -> run cs (moveLeft tape)
-    '+' -> run cs (inc tape)
-    '-' -> run cs (dec tape)
+    '>' -> runWithLogging verbose cs (moveRight tape)
+    '<' -> runWithLogging verbose cs (moveLeft tape)
+    '+' -> runWithLogging verbose cs (inc tape)
+    '-' -> runWithLogging verbose cs (dec tape)
     '.' -> do
       let char_to_print = toEnum (getCellValue tape) :: Char
-      (recursive_output, _) <- run cs tape -- We don't need recursive_did_print directly, this path itself is a print
-      return (char_to_print : recursive_output, True) -- Prepend current char, mark True as this path printed
-    ',' -> do -- Handle the input command
-      newTape <- readChar tape -- Read a char and update the tape
-      run cs newTape -- Continue execution with the updated tape
+      (recursive_output, _) <- runWithLogging verbose cs tape
+      return (char_to_print : recursive_output, True)
+    ',' -> do
+      let (leftTape, _, rightTape) = tape
+      newTape <- readChar tape `catch` \(_ :: SomeException) -> do
+        putStrLn "Error reading input, using 0"
+        return (leftTape, 0, rightTape)
+      runWithLogging verbose cs newTape
     '[' -> do
       let (loop_body, after_loop) = extractLoopBody cs
       if getCellValue tape == 0
-        then run after_loop tape -- Propagate result from after_loop
-        else run (loop_body ++ (c:cs)) tape -- Propagate result from loop execution
-    ']' -> run cs tape -- Propagate result
-    _   -> run cs tape -- Ignore non-command chars, propagate result
+        then runWithLogging verbose after_loop tape
+        else runWithLogging verbose (loop_body ++ (c:cs)) tape
+    ']' -> runWithLogging verbose cs tape
+    _   -> runWithLogging verbose cs tape
+
+-- Helper function for when
+when :: Bool -> IO () -> IO ()
+when True action = action
+when False _ = return ()
