@@ -68,7 +68,7 @@ executable bf-interpreter
     other-modules: Tape, Interpreter
 
     -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
+    other-extensions: ScopedTypeVariables
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.17.0.0
@@ -94,7 +94,7 @@ test-suite bf-interpreter-test
     other-modules:    Tape, Interpreter
 
     -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
+    other-extensions: ScopedTypeVariables
 
     -- Other library packages from which modules are imported.
     -- Add HUnit dependency
